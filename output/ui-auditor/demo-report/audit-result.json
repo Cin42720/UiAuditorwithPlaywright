@@ -1,0 +1,100 @@
+{
+  "targetUrl": "http://127.0.0.1:4173/index.html",
+  "generatedAt": "21.04.2026 16:32:46",
+  "durationMs": 12180,
+  "summary": {
+    "pagesAudited": 3,
+    "checkedLinks": 7,
+    "brokenLinks": 3,
+    "brokenImages": 1,
+    "mobileIssues": 1,
+    "blockedPages": 0,
+    "warningCount": 0
+  },
+  "pages": [
+    {
+      "url": "http://127.0.0.1:4173/index.html",
+      "title": "Northstar Campus Labs",
+      "navigationStatus": "HTTP 200",
+      "statusCode": 200,
+      "accessRestricted": false,
+      "desktopScreenshot": "./screenshots/page-01-desktop.png",
+      "mobileScreenshot": "./screenshots/page-01-mobile.png",
+      "checkedLinks": 4,
+      "brokenLinks": [
+        {
+          "url": "http://127.0.0.1:4173/missing-page.html",
+          "text": "Program Guide",
+          "status": 404,
+          "statusText": "HTTP 404"
+        },
+        {
+          "url": "http://127.0.0.1:4173/missing-page.html",
+          "text": "Download Brochure",
+          "status": 404,
+          "statusText": "HTTP 404"
+        }
+      ],
+      "brokenImages": [
+        {
+          "url": "http://127.0.0.1:4173/assets/missing-portrait.png",
+          "alt": "Broken portrait sample",
+          "reason": "Browser reported an image that did not render correctly."
+        }
+      ],
+      "mobileIssues": [
+        {
+          "type": "Button overlap",
+          "detail": "Explore Labs overlaps with Download Brochure"
+        }
+      ],
+      "auditWarnings": [],
+      "navigationCandidates": [
+        "http://127.0.0.1:4173/index.html",
+        "http://127.0.0.1:4173/about.html",
+        "http://127.0.0.1:4173/missing-page.html"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/about.html",
+      "title": "About Northstar Campus Labs",
+      "navigationStatus": "HTTP 200",
+      "statusCode": 200,
+      "accessRestricted": false,
+      "desktopScreenshot": "./screenshots/page-02-desktop.png",
+      "mobileScreenshot": "./screenshots/page-02-mobile.png",
+      "checkedLinks": 3,
+      "brokenLinks": [
+        {
+          "url": "http://127.0.0.1:4173/missing-page.html",
+          "text": "Scholarships",
+          "status": 404,
+          "statusText": "HTTP 404"
+        }
+      ],
+      "brokenImages": [],
+      "mobileIssues": [],
+      "auditWarnings": [],
+      "navigationCandidates": [
+        "http://127.0.0.1:4173/index.html",
+        "http://127.0.0.1:4173/about.html",
+        "http://127.0.0.1:4173/missing-page.html"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:4173/missing-page.html",
+      "title": "/missing-page.html",
+      "navigationStatus": "HTTP 404",
+      "statusCode": 404,
+      "accessRestricted": false,
+      "desktopScreenshot": "./screenshots/page-03-desktop.png",
+      "mobileScreenshot": "./screenshots/page-03-mobile.png",
+      "checkedLinks": 0,
+      "brokenLinks": [],
+      "brokenImages": [],
+      "mobileIssues": [],
+      "auditWarnings": [],
+      "navigationCandidates": []
+    }
+  ]
+}
