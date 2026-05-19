@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ui-auditor-with-playwright"
+version = "1.0.0"
+description = "Python Playwright based UI audit tool with visual HTML reports."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "playwright>=1.40,<2"
+]
+
+[project.scripts]
+ui-auditor = "ui_auditor.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["ui_auditor*"]
+
+[tool.setuptools.package-data]
+ui_auditor = [
+  "demo_site/*.html",
+  "demo_site/*.css",
+  "demo_site/assets/*"
+]

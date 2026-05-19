@@ -1,152 +1,10 @@
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
+from __future__ import annotations
 
-function metricCard(label, value, tone = "neutral") {
-  return `
-    <article class="metric metric--${tone}">
-      <span class="metric__label">${escapeHtml(label)}</span>
-      <strong class="metric__value">${escapeHtml(value)}</strong>
-    </article>
-  `;
-}
+from html import escape
+from typing import Any
 
-function issueList(title, items, emptyText) {
-  if (!items.length) {
-    return `
-      <section class="issue-panel">
-        <header class="issue-panel__header">
-          <h4>${escapeHtml(title)}</h4>
-        </header>
-        <p class="issue-panel__empty">${escapeHtml(emptyText)}</p>
-      </section>
-    `;
-  }
 
-  return `
-    <section class="issue-panel">
-      <header class="issue-panel__header">
-        <h4>${escapeHtml(title)}</h4>
-        <span class="pill">${items.length}</span>
-      </header>
-      <ul class="issue-list">
-        ${items
-          .map(
-            (item) => `
-              <li class="issue-list__item">
-                <strong>${escapeHtml(item.label)}</strong>
-                <span>${escapeHtml(item.detail)}</span>
-              </li>
-            `
-          )
-          .join("")}
-      </ul>
-    </section>
-  `;
-}
-
-function renderPageCard(page) {
-  const issueCount =
-    page.brokenLinks.length + page.brokenImages.length + page.mobileIssues.length;
-  const totalFlags = issueCount + page.auditWarnings.length;
-  const skippedLayout = page.auditWarnings.some(
-    (item) => item.type === "Access restricted" || item.type === "Stalled loading state"
-  );
-
-  return `
-    <article class="page-card">
-      <header class="page-card__header">
-        <div>
-          <p class="eyebrow">Audited page</p>
-          <h3>${escapeHtml(page.title || page.url)}</h3>
-          <a href="${escapeHtml(page.url)}" target="_blank" rel="noreferrer">${escapeHtml(page.url)}</a>
-        </div>
-        <div class="page-card__meta">
-          <span class="chip">${page.navigationStatus}</span>
-          <span class="chip chip--warn">${totalFlags} flag</span>
-        </div>
-      </header>
-
-      ${
-        page.auditWarnings.length
-          ? `
-            <section class="warning-strip">
-              ${page.auditWarnings
-                .map(
-                  (warning) => `
-                    <article class="warning-card">
-                      <strong>${escapeHtml(warning.type)}</strong>
-                      <span>${escapeHtml(warning.detail)}</span>
-                    </article>
-                  `
-                )
-                .join("")}
-            </section>
-          `
-          : ""
-      }
-
-      <div class="preview-grid">
-        <figure class="preview">
-          <img src="${escapeHtml(page.desktopScreenshot)}" alt="Desktop preview for ${escapeHtml(page.url)}" />
-          <figcaption>Desktop</figcaption>
-        </figure>
-        <figure class="preview">
-          <img src="${escapeHtml(page.mobileScreenshot)}" alt="Mobile preview for ${escapeHtml(page.url)}" />
-          <figcaption>iPhone 13</figcaption>
-        </figure>
-      </div>
-
-      <div class="issue-grid">
-        ${issueList(
-          "Broken links",
-          page.brokenLinks.map((item) => ({
-            label: item.text || item.url,
-            detail: `${item.url} - ${item.statusText}`
-          })),
-          "No broken link detected on this page."
-        )}
-        ${issueList(
-          "Broken images",
-          page.brokenImages.map((item) => ({
-            label: item.alt || item.url,
-            detail: item.reason
-          })),
-          "All detected images loaded successfully."
-        )}
-        ${issueList(
-          "Mobile layout",
-          page.mobileIssues.map((item) => ({
-            label: item.type,
-            detail: item.detail
-          })),
-          skippedLayout
-            ? "Layout checks were skipped because the page was blocked or remained in loading state."
-            : "No mobile overlap issue detected."
-        )}
-      </div>
-    </article>
-  `;
-}
-
-export function buildReportHtml(report) {
-  const totalIssues =
-    report.summary.brokenLinks +
-    report.summary.brokenImages +
-    report.summary.mobileIssues;
-
-  return `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UI Auditor Report</title>
-    <style>
+REPORT_CSS = """
       @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap");
 
       :root {
@@ -466,7 +324,177 @@ export function buildReportHtml(report) {
           flex-direction: column;
         }
       }
-    </style>
+"""
+
+
+def escape_html(value: Any = "") -> str:
+    return escape(str(value), quote=True)
+
+
+def metric_card(label: str, value: Any, tone: str = "neutral") -> str:
+    return f"""
+    <article class="metric metric--{escape_html(tone)}">
+      <span class="metric__label">{escape_html(label)}</span>
+      <strong class="metric__value">{escape_html(value)}</strong>
+    </article>
+  """
+
+
+def issue_list(title: str, items: list[dict[str, Any]], empty_text: str) -> str:
+    if not items:
+        return f"""
+      <section class="issue-panel">
+        <header class="issue-panel__header">
+          <h4>{escape_html(title)}</h4>
+        </header>
+        <p class="issue-panel__empty">{escape_html(empty_text)}</p>
+      </section>
+    """
+
+    rendered_items = "".join(
+        f"""
+              <li class="issue-list__item">
+                <strong>{escape_html(item["label"])}</strong>
+                <span>{escape_html(item["detail"])}</span>
+              </li>
+            """
+        for item in items
+    )
+
+    return f"""
+    <section class="issue-panel">
+      <header class="issue-panel__header">
+        <h4>{escape_html(title)}</h4>
+        <span class="pill">{len(items)}</span>
+      </header>
+      <ul class="issue-list">
+        {rendered_items}
+      </ul>
+    </section>
+  """
+
+
+def render_page_card(page: dict[str, Any]) -> str:
+    issue_count = (
+        len(page["brokenLinks"]) + len(page["brokenImages"]) + len(page["mobileIssues"])
+    )
+    total_flags = issue_count + len(page["auditWarnings"])
+    skipped_layout = any(
+        item["type"] in {"Access restricted", "Stalled loading state"}
+        for item in page["auditWarnings"]
+    )
+    warnings = ""
+    if page["auditWarnings"]:
+        warning_cards = "".join(
+            f"""
+                    <article class="warning-card">
+                      <strong>{escape_html(warning["type"])}</strong>
+                      <span>{escape_html(warning["detail"])}</span>
+                    </article>
+                  """
+            for warning in page["auditWarnings"]
+        )
+        warnings = f"""
+            <section class="warning-strip">
+              {warning_cards}
+            </section>
+          """
+
+    return f"""
+    <article class="page-card">
+      <header class="page-card__header">
+        <div>
+          <p class="eyebrow">Audited page</p>
+          <h3>{escape_html(page["title"] or page["url"])}</h3>
+          <a href="{escape_html(page["url"])}" target="_blank" rel="noreferrer">{escape_html(page["url"])}</a>
+        </div>
+        <div class="page-card__meta">
+          <span class="chip">{escape_html(page["navigationStatus"])}</span>
+          <span class="chip chip--warn">{total_flags} flag</span>
+        </div>
+      </header>
+
+      {warnings}
+
+      <div class="preview-grid">
+        <figure class="preview">
+          <img src="{escape_html(page["desktopScreenshot"])}" alt="Desktop preview for {escape_html(page["url"])}" />
+          <figcaption>Desktop</figcaption>
+        </figure>
+        <figure class="preview">
+          <img src="{escape_html(page["mobileScreenshot"])}" alt="Mobile preview for {escape_html(page["url"])}" />
+          <figcaption>iPhone 13</figcaption>
+        </figure>
+      </div>
+
+      <div class="issue-grid">
+        {issue_list(
+          "Broken links",
+          [
+              {
+                  "label": item["text"] or item["url"],
+                  "detail": f"{item['url']} - {item['statusText']}",
+              }
+              for item in page["brokenLinks"]
+          ],
+          "No broken link detected on this page.",
+        )}
+        {issue_list(
+          "Broken images",
+          [
+              {
+                  "label": item["alt"] or item["url"],
+                  "detail": item["reason"],
+              }
+              for item in page["brokenImages"]
+          ],
+          "All detected images loaded successfully.",
+        )}
+        {issue_list(
+          "Mobile layout",
+          [
+              {
+                  "label": item["type"],
+                  "detail": item["detail"],
+              }
+              for item in page["mobileIssues"]
+          ],
+          "Layout checks were skipped because the page was blocked or remained in loading state."
+          if skipped_layout
+          else "No mobile overlap issue detected.",
+        )}
+      </div>
+    </article>
+  """
+
+
+def build_report_html(report: dict[str, Any]) -> str:
+    total_issues = (
+        report["summary"]["brokenLinks"]
+        + report["summary"]["brokenImages"]
+        + report["summary"]["mobileIssues"]
+    )
+    blocked_note = ""
+    if report["summary"]["blockedPages"]:
+        blocked_note = f"""
+            <section class="panel panel--note">
+              <p class="eyebrow">Access note</p>
+              <p>
+                {report["summary"]["blockedPages"]} page(s) appeared to be protected by access restrictions or anti-bot checks.
+                For those pages, layout findings were intentionally skipped to avoid misleading results.
+              </p>
+            </section>
+          """
+
+    page_cards = "".join(render_page_card(page) for page in report["pages"])
+
+    return f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UI Auditor Report</title>
+    <style>{REPORT_CSS}</style>
   </head>
   <body>
     <main class="shell">
@@ -483,42 +511,29 @@ export function buildReportHtml(report) {
           <section class="panel">
             <p class="eyebrow">Scope</p>
             <ul class="scope-list">
-              <li><span>Target</span><strong>${escapeHtml(report.targetUrl)}</strong></li>
-              <li><span>Generated</span><strong>${escapeHtml(report.generatedAt)}</strong></li>
-              <li><span>Pages audited</span><strong>${report.summary.pagesAudited}</strong></li>
-              <li><span>Total issues</span><strong>${totalIssues}</strong></li>
+              <li><span>Target</span><strong>{escape_html(report["targetUrl"])}</strong></li>
+              <li><span>Generated</span><strong>{escape_html(report["generatedAt"])}</strong></li>
+              <li><span>Pages audited</span><strong>{report["summary"]["pagesAudited"]}</strong></li>
+              <li><span>Total issues</span><strong>{total_issues}</strong></li>
             </ul>
           </section>
           <section class="metrics">
-            ${metricCard("Broken links", report.summary.brokenLinks, report.summary.brokenLinks ? "warn" : "ok")}
-            ${metricCard("Broken images", report.summary.brokenImages, report.summary.brokenImages ? "warn" : "ok")}
-            ${metricCard("Mobile issues", report.summary.mobileIssues, report.summary.mobileIssues ? "warn" : "ok")}
-            ${metricCard("Checked links", report.summary.checkedLinks, "neutral")}
+            {metric_card("Broken links", report["summary"]["brokenLinks"], "warn" if report["summary"]["brokenLinks"] else "ok")}
+            {metric_card("Broken images", report["summary"]["brokenImages"], "warn" if report["summary"]["brokenImages"] else "ok")}
+            {metric_card("Mobile issues", report["summary"]["mobileIssues"], "warn" if report["summary"]["mobileIssues"] else "ok")}
+            {metric_card("Checked links", report["summary"]["checkedLinks"], "neutral")}
           </section>
         </div>
       </section>
 
-      ${
-        report.summary.blockedPages
-          ? `
-            <section class="panel panel--note">
-              <p class="eyebrow">Access note</p>
-              <p>
-                ${report.summary.blockedPages} page(s) appeared to be protected by access restrictions or anti-bot checks.
-                For those pages, layout findings were intentionally skipped to avoid misleading results.
-              </p>
-            </section>
-          `
-          : ""
-      }
+      {blocked_note}
 
       <section>
         <h2 class="section-title">Page findings</h2>
         <div class="pages">
-          ${report.pages.map(renderPageCard).join("")}
+          {page_cards}
         </div>
       </section>
     </main>
   </body>
-</html>`;
-}
+</html>"""
